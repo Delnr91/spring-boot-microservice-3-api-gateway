@@ -1,6 +1,7 @@
 package com.dani.spring_boot_microservice_3_api_gateway.security;
 
 
+import com.dani.spring_boot_microservice_3_api_gateway.security.jwt.JwtAuthorizationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,16 +13,17 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
 
-    //injecion objeto clase personalizada de un usuario
+    //inyeccion de objeto a clase personalizada de un usuario
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
-    //metodo encriptar el password
+    //metodo para encriptar el password
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -33,10 +35,6 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    @Bean
-    public JwtAuthorizationFilter jwtAuthorizationFilter(){
-        return new JwtAuthorizationFilter();
-    }
     //metodo principal
 
     @Bean
@@ -47,18 +45,33 @@ public class SecurityConfig {
 
         auth.userDetailsService(customUserDetailsService).passwordEncoder(passwordEncoder);
 
-       AuthenticationManager authenticationManager = auth.build();
+        AuthenticationManager authenticationManager = auth.build();
 
        //componentes protegidos y de libre acceso
-        http.csrf().disable().cors().disable()
-                .authorizeHttpRequests().
-                antMatchers("/api/authentication/sing-in", "/api/authentication/sing-up").permitAll()
+
+        return http.antMatcher("/api/authentication/**")
+                .authorizeRequests()
+                .anyRequest()
+                .authenticated()
+                .and()
+                .cors()
+                .and()
+                .csrf()
+                .disable()
                 //end point authenticados
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authenticationManager(authenticationManager)
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                //agregar el filtro jwt
+                .addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .build();
 
-        return http.build();
+
+    }
+
+    @Bean
+    public JwtAuthorizationFilter jwtAuthorizationFilter(){
+        return new JwtAuthorizationFilter();
     }
 
 }

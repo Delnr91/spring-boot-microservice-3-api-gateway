@@ -17,7 +17,7 @@ public class UserServiceImpl implements UserService{
     @Autowired
     private UserRepository userRepository;
 
-    /*METODO PARA REGISTRAR USUARIO, CREAR UN METODO BEAN PARA EN LA CLASE PRINCIPAL PARA INJECTAR A LA CLASE USER
+    /*METODO PARA REGISTRAR USUARIO, CREAR UN METODO BEAN PARA EN LA CLASE PRINCIPAL PARA INYECTAR A LA CLASE USER
     SERVICE Y NO TENER CONTRASEÑAS PLANAS*/
 
     @Autowired
@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService{
     @Override
     public Optional<User> findByUsername(String username){
 
-        return userRepository.findByUserName(username);
+        return userRepository.findByUsername(username);
     }
 
     //METODO PARA ACTUALIZAR ROL DEL USUARIO

@@ -1,12 +1,13 @@
 package com.dani.spring_boot_microservice_3_api_gateway.model;
 
 
-import jakarta.persistence.*;
 import lombok.Data;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
-import static jakarta.persistence.GenerationType.IDENTITY;
+
+import static javax.persistence.GenerationType.IDENTITY;
 
 @Entity
 @Table(name= "users")
@@ -18,7 +19,10 @@ public class User {
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
-    @Column(name="username" , unique = true, length = 100)
+    @Column (name="username")
+    private String username;
+
+    @Column(name="password")
     private String password;
 
     @Column(name="nombre")
@@ -30,6 +34,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name="role")
     private Role role;
+
+    @Transient
+    private String token;
+
 
 
 }

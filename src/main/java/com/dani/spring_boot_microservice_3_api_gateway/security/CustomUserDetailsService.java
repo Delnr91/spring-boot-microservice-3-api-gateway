@@ -26,6 +26,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow( ()  -> new UsernameNotFoundException("El usuario no fue encontrado:"+username));
 
         Set<GrantedAuthority> authorities = Set.of(SecurityUtils.convertToAuthority(user.getRole().name()));
+
          return UserPrincipal.builder()
                  .user(user)
                  .id(user.getId())
