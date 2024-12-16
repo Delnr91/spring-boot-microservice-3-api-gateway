@@ -1,5 +1,6 @@
 package com.dani.spring_boot_microservice_3_api_gateway.security.jwt;
 
+import com.dani.spring_boot_microservice_3_api_gateway.model.User;
 import com.dani.spring_boot_microservice_3_api_gateway.security.UserPrincipal;
 import com.dani.spring_boot_microservice_3_api_gateway.utils.SecurityUtils;
 import io.jsonwebtoken.Claims;
@@ -39,7 +40,7 @@ public class JwtProviderImpl implements JwtProvider{
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
-        //para desencriptar el token por una key
+        //para desencriptar el token por un objeto  key
 
         Key key = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
 
@@ -52,6 +53,21 @@ public class JwtProviderImpl implements JwtProvider{
                 .compact();
 
     }
+
+    //metodo para generar un token por parametro user
+    @Override
+     public  String generateToken(User user){
+
+        Key key = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+        return  Jwts.builder()
+                .setSubject(user.getUsername())
+                .claim("roles" , user.getRole())
+                .claim("userId", user.getId())
+                .setExpiration(new Date(System.currentTimeMillis()+ JWT_EXPIRATION_IN_MS))
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
+     }
+
     //metodo publico para obtener la autentificacion
 
     @Override
@@ -103,7 +119,7 @@ public class JwtProviderImpl implements JwtProvider{
 
     private Claims extractClaims(HttpServletRequest request){
 
-        String token = SecurityUtils.extractAuthTOkenFromRequest(request);
+        String token = SecurityUtils.extractAuthTokenFromRequest(request);
         if(token == null){
             return null;
         }

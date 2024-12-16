@@ -23,7 +23,7 @@ public class SecurityUtils {
     }
     //Metodo para extraer el token desde un request
 
-    public static String extractAuthTOkenFromRequest(HttpServletRequest request){
+    public static String extractAuthTokenFromRequest(HttpServletRequest request){
 
         String bearerToken = request.getHeader(AUTH_HEADER);
 

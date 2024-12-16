@@ -1,10 +1,12 @@
 package com.dani.spring_boot_microservice_3_api_gateway.security;
 
 
+import com.dani.spring_boot_microservice_3_api_gateway.model.Role;
 import com.dani.spring_boot_microservice_3_api_gateway.security.jwt.JwtAuthorizationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -30,7 +32,7 @@ public class SecurityConfig {
 
     //auth de la validacion de los usuarios
     @Bean
-    public AuthenticationManager authenticationManagert(AuthenticationConfiguration authenticationConfiguration) throws Exception{
+    public AuthenticationManager authenticationManagert(AuthenticationConfiguration authenticationConfiguration) throws Exception {
 
         return authenticationConfiguration.getAuthenticationManager();
     }
@@ -38,7 +40,7 @@ public class SecurityConfig {
     //metodo principal
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http)throws Exception{
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         AuthenticationManagerBuilder auth = http.getSharedObject(
                 AuthenticationManagerBuilder.class);
@@ -47,30 +49,32 @@ public class SecurityConfig {
 
         AuthenticationManager authenticationManager = auth.build();
 
-       //componentes protegidos y de libre acceso
 
-        return http.antMatcher("/api/authentication/**")
-                .authorizeRequests()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .cors()
-                .and()
-                .csrf()
-                .disable()
-                //end point authenticados
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authenticationManager(authenticationManager)
-                //agregar el filtro jwt
-                .addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
-                .build();
+        http.cors();
+        http.csrf().disable();
 
+        //end point authenticados
+        http.authenticationManager(authenticationManager);
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+
+        //componentes protegidos y de libre acceso
+        http.authorizeRequests()
+                .antMatchers("/api/authentication/sign-in", "/api/authentication/sign-up").permitAll()
+                .antMatchers(HttpMethod.GET, "/gateway/inmueble").permitAll()
+                .antMatchers("/gateway/inmueble/**").hasRole(Role.ADMIN.name())
+                .anyRequest().authenticated();
+
+        //agregar el filtro jwt
+        http.addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
 
     }
 
     @Bean
-    public JwtAuthorizationFilter jwtAuthorizationFilter(){
+    public JwtAuthorizationFilter jwtAuthorizationFilter() {
+
         return new JwtAuthorizationFilter();
     }
 
